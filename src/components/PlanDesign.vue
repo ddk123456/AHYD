@@ -48,6 +48,7 @@
       <el-table-column
           prop="spec_id"
           label="业务类型"
+          :formatter="formatterDesignType"
           width="120">
       </el-table-column>
       <el-table-column
@@ -89,7 +90,7 @@
         @prev-click="previous"
         @current-change="handleCurrentChange"
         :current-page="this.searchForm.current"
-        :page-sizes="[1]"
+        :page-sizes="[1,2,3]"
         :page-size="1"
         layout="total, sizes, prev, pager, next, jumper"
         :total="this.total">
@@ -145,7 +146,7 @@ export default {
         designer: "",
         designTime: [],
         current: 1,
-        size: 2
+        size: 1
       },
       total: 0,
       formLabelWidth: '120px',
@@ -154,13 +155,19 @@ export default {
     }
   },
   methods: {
+    // 新增一个《格式化业务类型》方法
+    formatterDesignType(row) {
+      if(row.spec_id==1){
+        return "OTN业务"
+      }else if(row.spec_id==2){
+        return "网元业务"
+      }
+    },
     previous(val) {
-      console.log("向前翻页", `${val}`);
-      this.searchForm.current = `${val}`;
+      this.searchForm.current = Number.parseInt(`${val}`);
       let _this = this;
       axios.post('http://localhost:8080/searchBill.do', this.searchForm)
           .then(res => {
-            console.log("res是服务器返回的结果", res);
             _this.planDesignInfoList = res.data.data.records;
             this.total = res.data.data.total;
           }, err => {
@@ -168,12 +175,10 @@ export default {
           });
     },
     next(val) {
-      console.log("向下翻页", `${val}`)
-      this.searchForm.current = `${val}`;
+      this.searchForm.current = Number.parseInt(`${val}`);
       let _this = this;
       axios.post('http://localhost:8080/searchBill.do', this.searchForm)
           .then(res => {
-            console.log("res是服务器返回的结果", res);
             _this.planDesignInfoList = res.data.data.records;
             this.total = res.data.data.total;
           }, err => {
@@ -187,7 +192,6 @@ export default {
       let _this = this;
       axios.post('http://localhost:8080/searchBill.do', this.searchForm)
           .then(res => {
-            console.log("res是服务器返回的结果", res);
             _this.planDesignInfoList = res.data.data.records;
             this.total = res.data.data.total;
           }, err => {
@@ -252,7 +256,6 @@ export default {
       return this.$confirm(`确定移除 ${file.name}？`);
     },
     handleDwgSuccess(res) {
-      console.log("凯通文件上传接口返回的数据：", res);
       this.dwgFileUrl = res.data[0];
       console.log("文件名：", this.dwgFileUrl.substr(this.dwgFileUrl.lastIndexOf("/") + 1));
       console.log("上传成功后，服务器返回的文件的url（地址）：", this.dwgFileUrl)

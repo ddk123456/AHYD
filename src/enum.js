@@ -68,8 +68,9 @@ const planDesignType = new EnumFactory({type1: {text: 'OTN业务', value: 1}, ty
 //**********************  export  ********************** */
 export {planDesignType}
 
-//test
+/*
 console.log(planDesignType.keys);
 console.log(planDesignType.texts);
 console.log(planDesignType.values);
 console.log(JSON.stringify(planDesignType.entries));
+ */
