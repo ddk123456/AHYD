@@ -6,7 +6,8 @@
       </el-form-item>
       <el-form-item label="规划类型">
         <el-select v-model="searchForm.specId" placeholder="规划类型">
-          <el-option label="OTN业务" value="1"></el-option>
+          <el-option v-once v-for="(item,index) in this.planDesignType.entries" :key="item.key" :value="item.value"
+                     :label="item.text"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="设计人">
@@ -26,33 +27,53 @@
     <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
     <el-button type="primary" icon="el-icon-plus" @click="dialogFormVisible = true">新增</el-button>
     <el-table
-        :data="routeCableList"
+        :data="planDesignInfoList"
         border
         style="width: 100%">
       <el-table-column
-          prop="cable_seg_name"
-          label="光缆段"
-          width="250">
+          prop="plan_bill_no"
+          label="规划工单号"
+          width="220">
       </el-table-column>
       <el-table-column
-          prop="station_a"
-          label="A段站点"
+          prop="plan_design_name"
+          label="规划设计名称"
+          width="220">
+      </el-table-column>
+      <el-table-column
+          prop="design_company"
+          label="设计单位"
+          width="230">
+      </el-table-column>
+      <el-table-column
+          prop="spec_id"
+          label="业务类型"
           width="120">
       </el-table-column>
       <el-table-column
-          prop="station_z"
-          label="Z端站点"
+          prop="project_director"
+          label="项目总负责人"
           width="120">
       </el-table-column>
       <el-table-column
-          prop="cable_name"
-          label="光缆信息"
-          width="200">
+          prop="spec_leader"
+          label="专业负责人"
+          width="120">
       </el-table-column>
       <el-table-column
-          prop="is_main_backup"
-          label="主备标识"
-          width="300">
+          prop="designer"
+          label="设计人"
+          width="120">
+      </el-table-column>
+      <el-table-column
+          prop="reviewer"
+          label="校审人"
+          width="120">
+      </el-table-column>
+      <el-table-column
+          prop="create_time"
+          label="设计新建时间"
+          width="170">
       </el-table-column>
       <el-table-column
           label="操作"
@@ -63,6 +84,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+        @next-click="next"
+        @prev-click="previous"
+        @current-change="handleCurrentChange"
+        :current-page="this.searchForm.current"
+        :page-sizes="[1]"
+        :page-size="1"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total">
+    </el-pagination>
     <el-dialog title="新增规划设计评估记录" :visible.sync="dialogFormVisible" width="1410px">
       <el-form :model="form">
         <el-form-item label="规划工单编号" :label-width="formLabelWidth">
@@ -95,12 +126,14 @@
 
 <script>
 import axios from 'axios'
+import {planDesignType} from '@/enum.js'
 
 export default {
   name: 'HelloWorld',
   data() {
     return {
-      routeCableList: [],
+      planDesignType,
+      planDesignInfoList: [],
       dialogFormVisible: false,
       form: {
         planBillNo: 'AHYD-PMS-20230527-002',
@@ -110,18 +143,53 @@ export default {
         planDesignName: "",
         specId: 1,
         designer: "",
-        designTime: []
+        designTime: [],
+        current: 1,
+        size: 2
       },
+      total: 0,
       formLabelWidth: '120px',
       dwgFileUrl: "",
       dwgFileName: ""
     }
   },
   methods: {
-    search() {
+    previous(val) {
+      console.log("向前翻页", `${val}`);
+      this.searchForm.current = `${val}`;
+      let _this = this;
       axios.post('http://localhost:8080/searchBill.do', this.searchForm)
           .then(res => {
             console.log("res是服务器返回的结果", res);
+            _this.planDesignInfoList = res.data.data.records;
+            this.total = res.data.data.total;
+          }, err => {
+            console.log("服务器出错，err代表服务器返回的错误信息")
+          });
+    },
+    next(val) {
+      console.log("向下翻页", `${val}`)
+      this.searchForm.current = `${val}`;
+      let _this = this;
+      axios.post('http://localhost:8080/searchBill.do', this.searchForm)
+          .then(res => {
+            console.log("res是服务器返回的结果", res);
+            _this.planDesignInfoList = res.data.data.records;
+            this.total = res.data.data.total;
+          }, err => {
+            console.log("服务器出错，err代表服务器返回的错误信息")
+          });
+    },
+    handleCurrentChange(val) {
+      // console.log(`当前页: ${val}`);
+    },
+    search() {
+      let _this = this;
+      axios.post('http://localhost:8080/searchBill.do', this.searchForm)
+          .then(res => {
+            console.log("res是服务器返回的结果", res);
+            _this.planDesignInfoList = res.data.data.records;
+            this.total = res.data.data.total;
           }, err => {
             console.log("服务器出错，err代表服务器返回的错误信息")
           });
